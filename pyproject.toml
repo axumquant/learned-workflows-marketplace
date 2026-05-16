@@ -1,0 +1,45 @@
+[project]
+name = "learned-workflows-marketplace"
+version = "0.1.0"
+description = "Workflow recording, versioning, and cross-org sharing platform for browser-automation agents."
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.12"
+authors = [{ name = "Norman Beckford", email = "norman@axumquant.com" }]
+keywords = ["workflow", "marketplace", "agentic", "pydantic-ai", "fastapi", "multi-tenant"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Database",
+    "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
+]
+dependencies = [
+    "fastapi>=0.115",
+    "pydantic>=2.9",
+    "pydantic-ai>=0.46",
+    "httpx>=0.28",
+    "asyncpg>=0.30",
+    "sqlalchemy>=2.0",
+    "alembic>=1.13",
+    "structlog>=24.4",
+    "qdrant-client>=1.12",
+]
+
+[project.optional-dependencies]
+neo4j = ["neo4j>=5.27"]
+dev = ["pytest>=8.0", "pytest-asyncio>=0.24", "ruff>=0.5", "uvicorn>=0.32"]
+
+[project.urls]
+"Homepage" = "https://github.com/axumquant/learned-workflows-marketplace"
+"Bug Tracker" = "https://github.com/axumquant/learned-workflows-marketplace/issues"
+"Sibling: agent lab" = "https://github.com/axumquant/agentic-browser-lab"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*"]

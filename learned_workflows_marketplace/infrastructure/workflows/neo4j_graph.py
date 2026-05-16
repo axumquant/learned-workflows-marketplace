@@ -29,8 +29,8 @@ from typing import Any
 
 import structlog
 
-from app.config import get_settings
-from app.learned_workflows import LearnedWorkflow
+from learned_workflows_marketplace.config import get_settings
+from learned_workflows_marketplace.learned_workflows import LearnedWorkflow
 
 log = structlog.get_logger(__name__)
 

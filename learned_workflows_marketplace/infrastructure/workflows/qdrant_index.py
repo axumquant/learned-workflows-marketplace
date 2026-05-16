@@ -29,7 +29,7 @@ from uuid import UUID
 
 import structlog
 
-from app.learned_workflows import LearnedWorkflow
+from learned_workflows_marketplace.learned_workflows import LearnedWorkflow
 
 log = structlog.get_logger(__name__)
 
@@ -57,13 +57,9 @@ def _indexable_text(payload: dict[str, Any]) -> str:
 async def _embed(text: str) -> list[float] | None:
     if not text.strip():
         return None
+    from learned_workflows_marketplace.ports import embed_query
     try:
-        from app.agents.workflows.knowledge_mcp import _embed_query  # type: ignore
-    except Exception as exc:  # noqa: BLE001
-        log.debug("workflow_qdrant_embed_module_missing", error=str(exc))
-        return None
-    try:
-        emb = await _embed_query(text)
+        emb = await embed_query(text)
     except Exception as exc:  # noqa: BLE001
         log.warning("workflow_qdrant_embed_failed", error=str(exc))
         return None
@@ -130,7 +126,7 @@ async def embed_learned_workflow_dict(payload: dict[str, Any]) -> bool:
         return False
 
     try:
-        from app.infrastructure.qdrant.client import ensure_collection, upsert_documents
+        from learned_workflows_marketplace.infrastructure.qdrant_client import ensure_collection, upsert_documents
     except Exception as exc:  # noqa: BLE001
         log.warning("workflow_qdrant_client_unavailable", error=str(exc))
         return False
@@ -155,7 +151,7 @@ async def embed_learned_workflow_dict(payload: dict[str, Any]) -> bool:
 async def remove_learned_workflow(workflow_id: str, organization_id: UUID) -> bool:
     """Delete the Qdrant point for a workflow when it's soft-deleted."""
     try:
-        from app.infrastructure.qdrant.client import collection_for, get_client
+        from learned_workflows_marketplace.infrastructure.qdrant_client import collection_for, get_client
     except Exception as exc:  # noqa: BLE001
         log.warning("workflow_qdrant_remove_client_unavailable", error=str(exc))
         return False
@@ -189,7 +185,7 @@ async def search_learned_workflows(
     if not embedding:
         return []
     try:
-        from app.infrastructure.qdrant.client import search as qdrant_search
+        from learned_workflows_marketplace.infrastructure.qdrant_client import search as qdrant_search
     except Exception as exc:  # noqa: BLE001
         log.warning("workflow_qdrant_search_module_missing", error=str(exc))
         return []

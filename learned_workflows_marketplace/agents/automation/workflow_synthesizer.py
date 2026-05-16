@@ -36,8 +36,8 @@ import structlog
 from pydantic import BaseModel, Field
 from pydantic_ai.settings import ModelSettings
 
-from app.agents.ai_models import make_pai_agent
-from app.agents.automation.pai_wiring import _ollama_cloud_settings
+from agentic_browser_lab.ai_models import make_pai_agent
+from agentic_browser_lab.automation.pai_wiring import _ollama_cloud_settings
 
 log = structlog.get_logger(__name__)
 

@@ -25,6 +25,9 @@ dependencies = [
     "alembic>=1.13",
     "structlog>=24.4",
     "qdrant-client>=1.12",
+    # LLM agent factory + Ollama Cloud wiring lives in the sibling repo.
+    # The synthesizer imports make_pai_agent / _ollama_cloud_settings.
+    "agentic-browser-lab @ git+https://github.com/axumquant/agentic-browser-lab.git@main",
 ]
 
 [project.optional-dependencies]
@@ -42,4 +45,4 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["app*"]
+include = ["learned_workflows_marketplace*"]

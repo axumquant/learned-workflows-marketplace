@@ -40,7 +40,7 @@ from uuid import UUID, uuid4
 import httpx
 import structlog
 
-from app.config import get_settings
+from learned_workflows_marketplace.config import get_settings
 
 log = structlog.get_logger(__name__)
 

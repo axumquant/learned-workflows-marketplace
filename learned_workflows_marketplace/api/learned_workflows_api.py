@@ -33,8 +33,8 @@ import structlog
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
-from app.auth import TenantContext, get_tenant_context
-from app.learned_workflows import (
+from learned_workflows_marketplace.auth import TenantContext, get_tenant_context
+from learned_workflows_marketplace.learned_workflows import (
     VALID_SCOPES,
     VALID_VISIBILITIES,
     LearnedWorkflow,
@@ -166,8 +166,8 @@ async def synthesize_from_run(
     expected to POST the (possibly edited) shape back to POST /v1/learned-workflows
     to actually persist.
     """
-    from app.agents.automation.workflow_synthesizer import synthesize_workflow_from_run
-    from app.automation_testing import get_automation_test_service
+    from learned_workflows_marketplace.agents.automation.workflow_synthesizer import synthesize_workflow_from_run
+    from learned_workflows_marketplace.ports import get_automation_test_service
 
     run_payload = await get_automation_test_service().get_run(ctx, run_id)
     if not run_payload:
@@ -238,12 +238,12 @@ async def create_workflow(body: CreateWorkflowRequest, ctx: Tenant) -> WorkflowR
 
     # Side effects: Qdrant embed + Neo4j edges (best-effort, non-blocking).
     try:
-        from app.infrastructure.workflows.qdrant_index import embed_learned_workflow
+        from learned_workflows_marketplace.infrastructure.workflows.qdrant_index import embed_learned_workflow
         await embed_learned_workflow(saved)
     except Exception as exc:  # noqa: BLE001
         log.warning("learned_workflow_qdrant_index_failed", workflow_id=saved.id, error=str(exc))
     try:
-        from app.infrastructure.workflows.neo4j_graph import upsert_workflow_edges
+        from learned_workflows_marketplace.infrastructure.workflows.neo4j_graph import upsert_workflow_edges
         await upsert_workflow_edges(saved)
     except Exception as exc:  # noqa: BLE001
         log.warning("learned_workflow_neo4j_upsert_failed", workflow_id=saved.id, error=str(exc))
@@ -315,12 +315,12 @@ async def update_workflow(
     # Re-embed / re-graph if any indexable field changed.
     if any(k in patch for k in ("display_name", "description", "skill_prompt", "tags", "portal")):
         try:
-            from app.infrastructure.workflows.qdrant_index import embed_learned_workflow_dict
+            from learned_workflows_marketplace.infrastructure.workflows.qdrant_index import embed_learned_workflow_dict
             await embed_learned_workflow_dict(updated)
         except Exception as exc:  # noqa: BLE001
             log.warning("learned_workflow_qdrant_reindex_failed", workflow_id=workflow_id, error=str(exc))
         try:
-            from app.infrastructure.workflows.neo4j_graph import upsert_workflow_edges_dict
+            from learned_workflows_marketplace.infrastructure.workflows.neo4j_graph import upsert_workflow_edges_dict
             await upsert_workflow_edges_dict(updated)
         except Exception as exc:  # noqa: BLE001
             log.warning("learned_workflow_neo4j_reupsert_failed", workflow_id=workflow_id, error=str(exc))
@@ -339,7 +339,7 @@ async def delete_workflow(workflow_id: str, ctx: Tenant) -> dict[str, Any]:
     if not ok:
         raise HTTPException(status_code=500, detail="delete failed")
     try:
-        from app.infrastructure.workflows.qdrant_index import remove_learned_workflow
+        from learned_workflows_marketplace.infrastructure.workflows.qdrant_index import remove_learned_workflow
         await remove_learned_workflow(workflow_id, ctx.organization_id)
     except Exception as exc:  # noqa: BLE001
         log.warning("learned_workflow_qdrant_remove_failed", workflow_id=workflow_id, error=str(exc))
@@ -499,7 +499,7 @@ async def invoke_workflow(workflow_id: str, body: InvokeRequest, ctx: Tenant) ->
     # / similar instructions. Best-effort — mem0 outage must not block.
     if user_id_str and not missing:
         try:
-            from app.features.automation.memory import get_automation_memory
+            from agentic_browser_lab.memory.memory import get_automation_memory
             mem = get_automation_memory()
             await mem.remember_workflow_usage(
                 org_id=ctx.organization_id,
@@ -648,7 +648,7 @@ async def install_from_marketplace(source_workflow_id: str, ctx: Tenant) -> Mark
         raise HTTPException(status_code=404, detail="marketplace workflow not found or not published")
     # Best-effort: index the new copy in Qdrant for this org so search works.
     try:
-        from app.infrastructure.workflows.qdrant_index import embed_learned_workflow_dict
+        from learned_workflows_marketplace.infrastructure.workflows.qdrant_index import embed_learned_workflow_dict
         await embed_learned_workflow_dict(installed)
     except Exception as exc:  # noqa: BLE001
         log.warning("marketplace_install_qdrant_index_skipped", error=str(exc))
@@ -757,7 +757,7 @@ async def search_workflows(body: SearchRequest, ctx: Tenant) -> SearchResponse:
     if not body.query.strip():
         return SearchResponse(matches=[])
     try:
-        from app.infrastructure.workflows.qdrant_index import search_learned_workflows
+        from learned_workflows_marketplace.infrastructure.workflows.qdrant_index import search_learned_workflows
     except Exception as exc:  # noqa: BLE001
         log.warning("learned_workflow_search_module_missing", error=str(exc))
         return SearchResponse(matches=[])

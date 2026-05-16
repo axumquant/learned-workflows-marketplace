@@ -25,6 +25,8 @@ dependencies = [
     "alembic>=1.13",
     "structlog>=24.4",
     "qdrant-client>=1.12",
+    # MCP server exposing the workflow catalog as stateless tools.
+    "mcp>=1.0",
     # LLM agent factory + Ollama Cloud wiring lives in the sibling repo.
     # The synthesizer imports make_pai_agent / _ollama_cloud_settings.
     # Pinned to a commit SHA so transitive resolves (e.g. sales-coach
